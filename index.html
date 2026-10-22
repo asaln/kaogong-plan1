@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta name="theme-color" content="#1a237e">
+<title>考公备考计划表 2026.10.15-2027.11.27（国考前）</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>📚 考公备考计划表 · 2026.10.15 - 2027.11.27（国考前）</h1>
+  <p>逐任务打卡 · 多端云同步 · 进度自动保存 · 手机电脑都能用</p>
+  <div class="stats">
+    <div class="stat"><div class="n" id="stDone">0</div><div class="l">已完成天数</div></div>
+    <div class="stat"><div class="n" id="stRate">0%</div><div class="l">总完成率</div></div>
+    <div class="stat"><div class="n" id="stTask">0</div><div class="l">已完成任务项</div></div>
+    <div class="stat"><div class="n" id="stTotal">0</div><div class="l">总任务项</div></div>
+    <div class="stat"><div class="n" id="stStage">阶段一</div><div class="l">当前所处阶段</div></div>
+  </div>
+  <div class="sync-status" id="syncStatus">
+    <span class="sync-dot offline" id="syncDot"></span>
+    <span id="syncText">未连接云同步</span>
+  </div>
+</header>
+
+<div class="toolbar no-print">
+  <input type="text" id="qDate" placeholder="按日期搜(如 2026-11)">
+  <select id="fStage"><option value="">全部阶段</option></select>
+  <select id="fType"><option value="">全部类型</option><option value="标准工作日">标准工作日</option><option value="值班日">值班日</option><option value="游泳日">游泳日</option><option value="周末非值班">周末非值班</option><option value="周末值班日">周末值班日</option></select>
+  <select id="fDone"><option value="">全部状态</option><option value="done">已完成</option><option value="part">进行中</option><option value="none">未完成</option></select>
+  <button onclick="window.print()">🖨 打印</button>
+  <button class="ghost" onclick="exportData()">⬇ 导出备份</button>
+  <button class="ghost" onclick="document.getElementById('importFile').click()">⬆ 导入备份</button>
+  <input type="file" id="importFile" accept="application/json,.json" style="display:none;">
+  <button class="ghost" onclick="backToToday()" style="background:#fff3e0;border-color:#ffb74d;color:#e65100;font-weight:600;">📍 回到今日</button>
+  <button class="ghost" onclick="addNewDay()">＋ 新增一天</button>
+  <button class="ghost" onclick="clearAll()">✖ 清空</button>
+  <button class="ghost" onclick="resetAllTasks()" style="background:#ffebee;color:#c62828;">↺ 恢复初始任务</button>
+  <span class="spacer"></span>
+  <span style="font-size:12px;color:#666;">点击表头可排序</span>
+</div>
+
+<div class="tabs no-print">
+  <button id="tabBtn-daily" class="active" onclick="switchTab('daily')">📋 每日任务打卡表</button>
+  <button id="tabBtn-stage" onclick="switchTab('stage')">📊 阶段进展</button>
+  <button id="tabBtn-nodes" onclick="switchTab('nodes')">🏁 关键时间节点</button>
+  <button id="tabBtn-weekly" onclick="switchTab('weekly')">📅 每周计划</button>
+  <button id="tabBtn-settings" onclick="switchTab('settings')">⚙️ 云同步设置</button>
+  <button id="tabBtn-help" onclick="switchTab('help')">📖 使用说明</button>
+</div>
+
+<div class="tab-panel active" id="tab-daily">
+<section class="panel">
+  <h2>📋 每日任务打卡表（点任务前复选框打卡 · 点任务文字直接编辑 · 支持换行）</h2>
+  <div style="overflow:auto; max-height:560px; border:1px solid #e0e0e0; border-radius:8px;">
+  <table id="dayTbl">
+    <thead><tr><th data-k="date" style="min-width:92px;">日期</th><th>星期</th><th data-k="stage">阶段</th><th data-k="dtype">类型</th><th>关键节点</th><th style="min-width:300px;">任务清单（点复选框打卡 · 点文字编辑）</th><th class="pct-cell" data-k="pct">完成度</th><th>用时</th><th>备注</th><th style="width:52px;">操作</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  </div>
+</section>
+</div>
+
+<div class="tab-panel" id="tab-stage">
+<section class="panel">
+  <h2>📊 四阶段进度总览</h2>
+  <div class="stage-grid" id="stageGrid"></div>
+  <div style="margin-top:14px;" id="stageBars"></div>
+</section>
+</div>
+
+<div class="tab-panel" id="tab-nodes">
+<section class="panel">
+  <h2>🏁 关键事件节点</h2>
+  <ul class="ms-list" id="msList"></ul>
+</section>
+</div>
+
+<div class="tab-panel" id="tab-weekly">
+<section class="panel">
+  <h2>📋 每周计划（52周 · 点击表头排序）</h2>
+  <div style="overflow:auto; max-height:340px;">
+  <table id="weekTbl">
+    <thead><tr><th data-k="w">周期</th><th data-k="range">日期</th><th data-k="duty">值班类型</th><th data-k="theme">本周主攻</th><th>每日要点</th><th data-k="std">验收标准</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  </div>
+</section>
+</div>
+
+<div class="tab-panel" id="tab-settings">
+<section class="panel">
+  <h2>⚙️ 云同步设置</h2>
+  <div class="settings-box">
+    <p style="margin-bottom:12px;color:#555;">开启云同步后，你在任何设备上的打卡进度、任务修改都会自动保存到云端，换设备打开即可看到最新数据。</p>
+    
+    <div class="setting-group">
+      <label>同步方式</label>
+      <select id="syncProvider" onchange="onSyncProviderChange()">
+        <option value="local">仅本地（localStorage，不跨设备）</option>
+        <option value="supabase">Supabase 云端同步（推荐，免费）</option>
+        <option value="leancloud">LeanCloud 云端同步（国内访问快）</option>
+      </select>
+    </div>
+
+    <div id="supabaseConfig" style="display:none;">
+      <div class="setting-group">
+        <label>Supabase URL</label>
+        <input type="text" id="supaUrl" placeholder="https://xxxx.supabase.co" style="width:100%;">
+      </div>
+      <div class="setting-group">
+        <label>Supabase Anon Key</label>
+        <input type="text" id="supaKey" placeholder="eyJhbGciOiJIUzI1NiIs..." style="width:100%;">
+      </div>
+      <div class="setting-group">
+        <label>用户标识</label>
+        <input type="text" id="supaUserId" placeholder="自定义用户名（用于区分不同人）" style="width:100%;">
+        <small style="color:#888;">填写一个你自己记得住的名字即可，多设备用同一个名字就能同步。</small>
+      </div>
+    </div>
+
+    <div id="leancloudConfig" style="display:none;">
+      <div class="setting-group">
+        <label>LeanCloud App ID</label>
+        <input type="text" id="lcAppId" placeholder="你的 LeanCloud App ID" style="width:100%;">
+      </div>
+      <div class="setting-group">
+        <label>LeanCloud App Key</label>
+        <input type="text" id="lcAppKey" placeholder="你的 LeanCloud App Key" style="width:100%;">
+      </div>
+      <div class="setting-group">
+        <label>用户标识</label>
+        <input type="text" id="lcUserId" placeholder="自定义用户名（用于区分不同人）" style="width:100%;">
+        <small style="color:#888;">填写一个你自己记得住的名字即可，多设备用同一个名字就能同步。</small>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;">
+      <button onclick="saveSyncConfig()" style="background:#3949ab;color:#fff;padding:10px 24px;border:none;border-radius:6px;cursor:pointer;font-size:14px;">💾 保存配置并连接</button>
+      <button class="ghost" onclick="syncNow()" style="margin-left:8px;">🔄 立即同步</button>
+      <button class="ghost" onclick="logoutSync()" style="margin-left:8px;color:#c62828;">🚪 断开连接</button>
+    </div>
+
+    <div id="syncHelp" style="margin-top:16px;padding:12px;background:#f5f5f5;border-radius:8px;font-size:12px;color:#666;display:none;">
+      <p><b style="color:#1a237e;">如何获取 Supabase 配置：</b></p>
+      <p>1. 打开 <a href="https://supabase.com" target="_blank">supabase.com</a>，用 GitHub 账号注册（免费）</p>
+      <p>2. 点击 "New Project"，创建一个项目（地区选离你近的）</p>
+      <p>3. 进入项目后，左侧菜单点 "SQL Editor"，粘贴下方 SQL 建表语句并执行：</p>
+      <pre style="background:#1e1e1e;color:#d4d4d4;padding:10px;border-radius:6px;overflow-x:auto;font-size:11px;margin:6px 0;"><code>create table kaogong_data (
+  id bigserial primary key,
+  user_id text not null,
+  data jsonb not null,
+  updated_at timestamptz default now(),
+  unique(user_id)
+);
+alter table kaogong_data enable row level security;
+create policy "Users manage own data" on kaogong_data
+  for all using (user_id = auth.uid()::text) with check (user_id = auth.uid()::text);</code></pre>
+      <p>4. 进入 Settings → API，复制 Project URL 和 anon public key</p>
+      <p>5. 填入上方输入框，点保存即可</p>
+      <p style="margin-top:8px;color:#c62828;"><b>注意：</b>本页面不存储你的密钥，配置只存在你本机浏览器中。</p>
+    </div>
+    <button class="ghost" onclick="toggleSyncHelp()" style="margin-top:8px;font-size:12px;">📖 显示/隐藏配置教程</button>
+  </div>
+</section>
+</section>
+</div>
+
+<div class="tab-panel" id="tab-help">
+<section class="panel help">
+  <h2>📖 使用说明</h2>
+  <p><b>① 打卡：</b>每天"任务清单"里每项任务前都有复选框，点一下即标记完成（文字自动划线变灰）。</p>
+  <p><b>② 进度：</b>勾选后当天"完成度"自动算百分比，勾满当天 → 整行变绿；勾一部分 → 变黄。顶部四阶段进度条同步变长。</p>
+  <p><b>③ 修改任务：</b>直接点击任意任务文字即可编辑，按 Enter 保存，Shift+Enter 换行。修改后自动保存到本地。</p>
+  <p><b>④ 筛选：</b>用顶部筛选栏按阶段/类型/完成状态快速定位某天；搜索框支持按日期片段检索（如输 2026-11 看11月）。</p>
+  <p><b>⑤ 排序：</b>点击表格表头可按该列排序（如按完成度升序，找出还没开始的天）。</p>
+  <p><b>⑥ 打印：</b>点"打印"可打印当前筛选结果，贴墙对照使用。</p>
+  <p><b>⑦ 多端同步：</b>在"云同步设置"标签页配置 Supabase 或 LeanCloud，即可实现多设备数据同步。不配置也能正常使用本地功能。</p>
+  <p><b>⑧ 时间：</b>所有时间写进任务描述（如 06:50-07:15），不做时区换算。</p>
+  <p><b>⑨ 改任务：</b>点任务文字直接编辑，支持换行（Shift+Enter）。也可点当天右侧「✎ 编辑」整行重写、点「🗑」删除当天。</p>
+  <p><b>⑩ 备份：</b>重要进度请定期点「⬇ 导出备份」存一份 JSON 文件，换设备后用「⬆ 导入备份」读回。</p>
+</section>
+</div>
+
+<div id="tip"></div>
+<div id="confirmMask"></div>
+<div id="confirmBox">
+  <div class="ctitle" id="confirmTitle">确认操作</div>
+  <div class="cbody" id="confirmBody"></div>
+  <div class="cfoot">
+    <button class="cbtn ok" id="confirmOk">确认</button>
+    <button class="cbtn cancel" id="confirmCancel">取消</button>
+  </div>
+</div>
+
+<!-- 编辑弹窗（手机端友好） -->
+<div id="editModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <span id="editModalTitle">编辑任务</span>
+      <button class="modal-close" onclick="closeEditModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <textarea id="editTextarea" placeholder="输入任务内容..." rows="6"></textarea>
+      <p class="edit-hint">💡 一行一条任务 · 支持换行 · 空行自动忽略</p>
+    </div>
+    <div class="modal-footer">
+      <button class="cbtn cancel" onclick="closeEditModal()">取消</button>
+      <button class="cbtn ok" onclick="saveEditModal()" style="background:#3949ab;">💾 保存</button>
+    </div>
+  </div>
+</div>
+
+  <script>/* data.js 是纯 JSON，被当作脚本直接执行后会全局暴露 DATA 变量 */</script>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
