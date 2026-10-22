@@ -7,10 +7,8 @@
 - `index.html` 页面骨架
 - `404.html`   刷新兜底（与 index.html 相同）
 - `css/style.css` 样式
-- `js/app.js`  业务逻辑（渲染 / 编辑 / 打卡 / 导入导出）
-- `js/sync.js` 云同步适配层（封装 GitHub Gist 读写）
-- `js/data.js`  计划数据（409 天每日任务 + 58 周计划 + 关键节点）
-- `data/plan-data.json` 结构化数据副本（GitHub Actions 自动构建用，可保留也可删除）
+- `js/app.js`  全部业务逻辑（渲染 / 编辑 / 打卡 / 导入导出 **+ 云同步 GitHub Gist 读写，内联实现**）
+- `js/data.js`  计划数据（409 天每日任务 + 关键节点）
 
 ## 本地预览
 
